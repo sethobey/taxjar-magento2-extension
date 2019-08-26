@@ -200,7 +200,7 @@ class Smartcalcs
         $order = array_merge($fromAddress, $toAddress, [
             'shipping' => $shipping - abs($shippingDiscount),
             'line_items' => $this->_getLineItems($quote, $quoteTaxDetails),
-            'nexus_addresses' => $this->_getNexusAddresses($quote->getStoreId()),
+            'nexus_addresses' => $this->_getNexusAddresses($quote->getStoreId(), $toAddress),
             'customer_id' => $quote->getCustomerId() ? $quote->getCustomerId() : 0,
             'plugin' => 'magento'
         ]);
@@ -479,12 +479,14 @@ class Smartcalcs
      * Get international nexus addresses for `nexus_addresses` param
      *
      * @param int $storeId
+     * @param array $toAddress
      * @return array
      */
-    private function _getNexusAddresses($storeId)
+    private function _getNexusAddresses($storeId, $toAddress)
     {
         $nexusAddresses = $this->nexusFactory->create()->getCollection()->addStoreFilter($storeId);
         $addresses = [];
+        $coCount = 0;
 
         foreach ($nexusAddresses as $nexusAddress) {
             $addresses[] = [
@@ -495,9 +497,27 @@ class Smartcalcs
                 'city' => $nexusAddress->getCity(),
                 'street' => $nexusAddress->getStreet()
             ];
+
+            if($nexusAddress->getRegionCode() == 'CO') {
+                $coCount++;
+            }
         }
 
-        return $addresses;
+        // Remove Colorado addresses that don't match the ship_to city (but ensure at least one remains)
+        foreach ($addresses as $index => $address) {
+            if (!empty($toAddress['to_city']) && $address['state'] == 'CO') {
+                if($coCount <= 1) {
+                    continue;
+                }
+
+                if (strtolower(trim($toAddress['to_city'])) != strtolower(trim($address['city']))) {
+                    unset($addresses[$index]);
+                    $coCount--;
+                }
+            }
+        }
+
+        return array_values($addresses);
     }
 
     /**

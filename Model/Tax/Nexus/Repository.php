@@ -254,7 +254,8 @@ class Repository implements \Taxjar\SalesTax\Api\Tax\NexusRepositoryInterface
 
         if ($regionAddresses->getTotalCount()
         && ($nexus->getCountryId() == 'US'
-        || $nexus->getCountryId() == 'CA')) {
+        || $nexus->getCountryId() == 'CA')
+        && $nexus->getRegionCode() != 'CO') {
             if ($nexus->getStoreId() != 0) {
                 $exception->addError(__('Only one address per region / state is currently supported per store.'));
             } else {
