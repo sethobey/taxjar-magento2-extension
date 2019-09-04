@@ -40,12 +40,20 @@ class Order extends \Taxjar\SalesTax\Model\Transaction
     public function build(
         \Magento\Sales\Model\Order $order
     ) {
-        $createdAt = new \DateTime($order->getCreatedAt());
-        $subtotal = (float) $order->getSubtotal();
-        $shipping = (float) $order->getShippingAmount();
-        $discount = (float) $order->getDiscountAmount();
+        $createdAt = new \DateTime($order->getCreatedAt());;
+        $subtotal = 0.0;
+        $shipping = 0.0;
+        $discount = 0.0;
+        $salesTax = 0.0;
         $shippingDiscount = (float) $order->getShippingDiscountAmount();
-        $salesTax = (float) $order->getTaxAmount();
+        $invoices = $order->getInvoiceCollection();
+
+        foreach($invoices as $invoice) {
+            $shipping += $invoice->getShippingAmount();
+            $subtotal += $invoice->getSubtotal();
+            $discount += abs($invoice->getDiscountAmount());
+            $salesTax += $invoice->getTaxAmount();
+        }
 
         $this->originalOrder = $order;
 
@@ -62,7 +70,7 @@ class Order extends \Taxjar\SalesTax\Model\Transaction
             $newOrder,
             $this->buildFromAddress($order),
             $this->buildToAddress($order),
-            $this->buildLineItems($order, $order->getAllItems()),
+            $this->buildLineItems($order, $order->getAllItems(), 'invoice'),
             $this->buildCustomerExemption($order)
         );
 

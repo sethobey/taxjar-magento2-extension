@@ -211,8 +211,8 @@ class Transaction
             }
 
             $itemId = $item->getOrderItemId() ? $item->getOrderItemId() : $item->getItemId();
-            $discount = (float) $item->getDiscountAmount();
-            $tax = (float) $item->getTaxAmount();
+            $discount = (float) $item->getDiscountInvoiced();
+            $tax = (float) $item->getTaxInvoiced();
 
             if (isset($parentDiscounts[$itemId])) {
                 $discount = $parentDiscounts[$itemId] ?: $discount;
@@ -224,7 +224,7 @@ class Transaction
 
             $lineItem = [
                 'id' => $itemId,
-                'quantity' => (int) $item->getQtyOrdered(),
+                'quantity' => (int) $item->getQtyInvoiced(),
                 'product_identifier' => $item->getSku(),
                 'description' => $item->getName(),
                 'unit_price' => (float) $item->getPrice(),
