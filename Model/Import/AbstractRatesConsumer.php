@@ -155,10 +155,7 @@ abstract class AbstractRatesConsumer
         } catch (LocalizedException $e) {
             $this->fail($e, $e->getMessage());
         } catch (Exception $e) {
-            $this->fail(
-                $e,
-                __('Sorry, something went wrong during backup rate sync.')
-            );
+            $this->fail($e, __('Sorry, something went wrong during backup rate sync.'));
         }
 
         $this->entityManager->save($this->operation);

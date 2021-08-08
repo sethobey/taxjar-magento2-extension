@@ -225,7 +225,9 @@ class ImportRates implements ObserverInterface
      */
     private function setCustomerTaxClasses(string $value): self
     {
-        $this->customerTaxClasses = explode(',', $value);
+        $this->customerTaxClasses = array_filter(
+            explode(',', $value)
+        );
 
         return $this;
     }
@@ -236,7 +238,9 @@ class ImportRates implements ObserverInterface
      */
     private function setProductTaxClasses(string $value): self
     {
-        $this->productTaxClasses = explode(',', $value);
+        $this->productTaxClasses = array_filter(
+            explode(',', $value)
+        );
 
         return $this;
     }
@@ -310,7 +314,7 @@ class ImportRates implements ObserverInterface
      */
     public function cron(): void
     {
-        $this->execute(new Observer);
+        $this->execute(new Observer());
     }
 
     /**
@@ -578,7 +582,7 @@ class ImportRates implements ObserverInterface
     private function zipCodeIsValid(): bool
     {
         if ($this->backupRateOriginAddress->isScopeCountryCodeUS()) {
-            return $this->zipCode && preg_match("/(\d{5}-\d{4})|(\d{5})/", $this->zipCode);
+            return $this->zipCode && preg_match("/^\d{5}(-?\d{4})?$/", $this->zipCode);
         }
 
         return (bool) $this->zipCode;
